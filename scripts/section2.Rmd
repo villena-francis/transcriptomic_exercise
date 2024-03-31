@@ -1,0 +1,271 @@
+---
+title: "**Section2**"
+author: "Francisco J. Villena González"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+## Setup for analysis
+
+In the following chunk you'll find the code required to import the essential libraries for the analysis. If you need to install any, you can add them by taking off the '\#' sign at the start of the line. Additionally, you'll need to modify the correct path to ensure your working directory is set to `part_2`. This code block does not appear in the .html format. To see it, access to `scripts/section2.Rmd`.
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "/home/villena/transcriptomic_exercise/part_2")
+
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+#BiocManager::install("DESeq2")
+library(DESeq2)
+#BiocManager::install("vsn")
+library(vsn)
+#install.packages("ggplot2")
+library(ggplot2) 
+#install.packages("pheatmap")
+library(pheatmap)
+#install.packages("dplyr")
+library(dplyr)
+#BiocManager::install("apeglm")
+library(apeglm)
+```
+
+```{r part1, echo=FALSE, results='asis'}
+cat("Package versions used in this analysis:", "\n\n")
+
+cat(paste0("- R base: ", getRversion(), "\n\n"))
+
+cat(paste0("- RStudio: ", rstudioapi::versionInfo()$version, "\n\n"))
+
+cat(paste0("- DESeq2: ", packageVersion("DESeq2"), "\n\n"))
+
+cat(paste0("- vsn: ", packageVersion("vsn"), "\n\n"))
+
+cat(paste0("- ggplot2: ", packageVersion("ggplot2"), "\n\n"))  
+
+cat(paste0("- pheatmap: ", packageVersion("pheatmap"), "\n\n"))
+
+cat(paste0("- dplyr: ", packageVersion("dplyr"), "\n\n"))
+```
+
+# **Question 4**
+
+## Creating the DESeq2 object: matrix + design
+
+The code block below reads raw gene count data and sample metadata from CSV files, processes the data by assigning row names, removing an unnecessary column, converting variables to factors, and creates a new factor variable combining treatment and time point information to prepare the data for the Differential Expression Gene analysis.
+
+```{r part2, message=FALSE}
+
+counts_data <- read.csv(file = "input/rawcounts.tsv", sep = "\t", row.names = 1)
+experiment_data <- read.csv(file = "input/metadata.tsv", sep = "\t")
+
+rownames(experiment_data) <- colnames(counts_data)
+
+experiment_data <- mutate(.data = experiment_data, 
+                           X = NULL,
+                           patient = as.factor(patient),
+                           agent = as.factor(agent),
+                           time = as.factor(time))
+
+identical(colnames(counts_data), rownames(experiment_data))
+
+experiment_data$group <- as.factor(paste0(experiment_data$agent, experiment_data$time))
+```
+
+The next step is to create a DESeqDataSet object using the DESeqDataSetFromMatrix() function, specifying the count data matrix, sample metadata, and the experimental design formula indicating that the counts depend on both the patient and group variables. Then filters out low count genes, keeping only those with at least 10 reads total across all samples To reduce the computational cost of the analysis. Finally, it performs the differential expression analysis using the DESeq() function with the Wald test.
+
+```{r part3, message=FALSE}
+dds <- DESeqDataSetFromMatrix(countData = counts_data,
+                              colData = experiment_data,
+                              design = ~ patient + group)
+
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep, ]
+
+dds2 <- DESeq(dds, test = "Wald")
+```
+
+## Exploratory analysis and quality control
+
+To evaluate the quality of the data, the following code applies a variance stabilizing transformation to the data and generates several PCA plots. One plot colors the samples based on the "patient" variable, another colors them based on the "group" variable, a third uses the "agent" variable, and a fourth uses the "time" variable:
+
+```{r part4, message=FALSE, out.width="50%", results='hold', fig.show='hold'}
+vsd <- vst(dds, blind = TRUE)
+
+plotPCA(vsd, intgroup = "patient")
+plotPCA(vsd, intgroup = "group")
+plotPCA(vsd, intgroup = "agent")
+plotPCA(vsd, intgroup = "time")
+```
+
+The previous PCA plots reveal that the "patient" factor best explains the variability in the data. The cellular origin of the samples appears to be the main determinant of the observed variability. However, according to this factor, one of the samples behaves as an outlier that does not quite fit well into any of the 4 clusters generated in the PCA plots. To further evaluate this in detail, the following code generates a distance matrix:
+
+```{r part5, message=FALSE}
+sample_distances <- dist(t(assay(vsd)))
+sample_distances_matrix<- as.matrix( sample_distances )
+rownames(sample_distances_matrix) <- paste( vsd$patient, vsd$group, sep = " - " )
+colnames(sample_distances_matrix) <- NULL
+pheatmap(sample_distances_matrix,
+         clustering_distance_rows = sample_distances,
+         clustering_distance_cols = sample_distances) 
+```
+
+Certainly, it is observed that the 24-hour control sample from patient 4 after treatment shows greater similarity to the samples from patient 3 than to the other samples from patient 4. There could have been contamination when moving from preparing cultures of patient 3 to patient 4, or the experimenter may have been confused and continued using cells from patient 3 in the preparation of the 24-hour control for patient 4. However, a more detailed analysis would be required to confirm this hypothesis.
+
+Considering the observed importance of cell culture origin in data variability and potential results, it was determined that this outlier should be excluded. The following code block is responsible for removing the outlier and repeating the steps of creating the DESeq2 object and generating the PCA plots:
+
+```{r part6,  message=FALSE, out.width="50%", results='hold', fig.show='hold'}
+patient_filter <- which(experiment_data$patient == 4)
+agent_filter <- which(experiment_data$agent == "Control")
+time_filter <- which(experiment_data$time == "24h")
+
+patient_agent <- intersect(patient_filter, agent_filter)
+patient_time <- intersect(patient_filter, time_filter)
+outlier <- intersect(patient_agent, patient_time)
+
+experiment_data_mod <- experiment_data[-outlier,]
+counts_data_mod <- counts_data[ ,-outlier]
+
+dds_mod <- DESeqDataSetFromMatrix(countData = counts_data_mod,
+                                  colData = experiment_data_mod,
+                                  design = ~ patient + group)
+
+keep <- rowSums(counts(dds_mod)) >= 10
+dds_mod <- dds_mod[keep, ]
+
+dds2_mod <- DESeq(dds_mod, test = "Wald")
+
+vsd_mod <- vst(dds2_mod, blind = TRUE)
+
+plotPCA(vsd_mod, intgroup = "patient")
+plotPCA(vsd_mod, intgroup = "group")
+plotPCA(vsd_mod, intgroup = "agent")
+plotPCA(vsd_mod, intgroup = "time")
+```
+
+Continuing with the exploratory analysis, the following code block proceeds to create a distance matrix:
+
+```{r part7, message=FALSE}
+sample_distances_mod <- dist(t(assay(vsd_mod)))
+sample_distances_matrix_mod <- as.matrix( sample_distances_mod )
+rownames(sample_distances_matrix_mod) <- paste( vsd_mod$patient, vsd_mod$group, sep = " - " )
+colnames(sample_distances_matrix_mod) <- NULL
+pheatmap(sample_distances_matrix_mod,
+         clustering_distance_rows = sample_distances_mod,
+         clustering_distance_cols = sample_distances_mod) 
+```
+
+The distance matrix reveals four distinct blocks of high similarity, indicated by low distance values, corresponding to the four patient-based clusters. Samples within each block are highly similar to each other, while samples from different blocks show greater dissimilarity. As previously mentioned, this suggests that the cellular origin of the samples, determined by the patient factor, is a major driver of the observed clustering pattern
+
+## Differential expression: exploring results
+
+As part of the evaluation of the results, the following command generates a plot of the dispersion estimates as a function of the mean of normalized counts for each gene:
+
+```{r part8, message=FALSE}
+plotDispEsts(dds2_mod)
+```
+
+The previous graph provides information about the fit of the model used by DESeq2 and the variability in the data. The black dots represent the gene-wise maximum likelihood estimates (MLEs) of dispersion, the red line represents the fitted values of the dispersion based on the MLEs, and the blue dots are the final dispersion estimates used in the differential expression analysis, which are obtained by shrinking the gene-wise MLEs towards the fitted values. The appearance of the graph is within expectations; a decreasing trend in the dispersion estimates as the mean of normalized counts increases, due to the fact that genes with higher counts tend to have lower variability across samples.
+
+The following function generates a Mean-Average plot from the differential expression data:
+
+```{r part9, message=FALSE}
+plotMA(dds2_mod)
+```
+
+In the graph just presented each point represents a gene; the x-axis shows the mean of normalized counts and the y-axis represents the change in expression where positive values indicate overexpression and negative values indicate underexpression. The points colored in blue represent genes that show statistically significant changes in expression, and those points that exceed the limits of the graph are represented as triangles.
+
+This code block generates the plots to visually evaluate the effect of the variance stabilizing transformation on the data compared to the normalized data:
+
+```{r part10, message=FALSE, out.width="50%", results='hold', fig.show='hold'}
+norm_data_mod <- normTransform(dds2_mod)
+
+norm_graph_mod <- meanSdPlot(assay(norm_data_mod))
+vsd_graph_mod <- meanSdPlot(assay(vsd_mod))
+```
+
+The red line represents the trend between the mean and variance. A relatively flat red line after applying the variance stabilizing transformation indicates that it successfully stabilized the variance across the dynamic range of the data. This is important for valid statistical inference in downstream differential expression analysis, as many common methods assume homogeneity of variance.
+
+This code performs differential expression analysis using DESeq2 with lfcThreshold = 1, to identify which genes are differentially expressed between the OHT-treated samples compared to control after 24 hours:
+
+```{r part11, message=FALSE}
+res_OHT_lfc1_mod <- results(object = dds2_mod,
+                            contrast = c("group", "Control24h", "OHT24h"),
+                            alpha = 0.05,
+                            lfcThreshold = 1,
+                            pAdjustMethod = "BH")
+summary(res_OHT_lfc1_mod)
+```
+
+In the absence of differentially expressed genes, we decided to perform differential expression analysis using DESeq2 without an lfcThreshold to identify genes differentially expressed between the OHT-treated samples and control after 24 hours:
+
+```{r part12, message=FALSE}
+res_OHT_relaxed_mod <- results(object = dds2_mod,
+                               contrast = c("group", "Control24h", "OHT24h"),
+                               alpha = 0.05,
+                               pAdjustMethod = "BH")
+summary(res_OHT_relaxed_mod)
+```
+
+This code performs differential expression analysis using DESeq2 with lfcThreshold = 1, to identify which genes are differentially expressed between the DPN-treated samples compared to control after 24 hours:
+
+```{r part13, message=FALSE}
+res_DPN_lfc1_mod <- results(dds2_mod,
+                            contrast = c("group", "Control24h", "DPN24h"),
+                            alpha = 0.05,
+                            lfcThreshold = 1,
+                            pAdjustMethod = "BH")
+summary(res_DPN_lfc1_mod)
+```
+
+In the absence of differentially expressed genes, we decided to perform differential expression analysis using DESeq2 without an lfcThreshold to identify genes differentially expressed between the DPN-treated samples and control after 24 hours:
+
+```{r part14, message=FALSE}
+res_DPN_relaxed_mod <- results(dds2_mod,
+                               contrast = c("group", "Control24h", "DPN24h"),
+                               alpha = 0.05,
+                               pAdjustMethod = "BH")
+summary(res_DPN_relaxed_mod)
+```
+
+## Conclussions
+
+The results of this differential expression analysis suggest that 24-hour treatment with 4-hydroxytamoxifen (OHT) did not substantially alter gene expression profiles. In contrast, treatment with diarylpropionitrile (DPN) induced changes in the expression of 5 genes, but the magnitude of these changes was moderate (less than 2-fold). Therefore, the effects of DPN treatment do not appear to be highly significant.
+
+# **Question 5**
+
+## Generating the gene ranking file for GSEA analysis
+
+The following code block loads the results of the differential expression analysis performed with DESeq2 in question 4, including the removal of the outlier. It then extracts the differentially expressed genes using a significance threshold of 0.05 when comparing the experimental conditions necessary to analyze the effect of DNP treatment at 24 hours.
+
+```{r part15, message=FALSE}
+dds_GSEA <- dds2_mod
+
+res_DPN24h_vs_Control24h <- results(dds_GSEA, 
+                                    alpha = 0.05, 
+                                    contrast = c("group", "DPN24h", "Control24h"))
+
+summary(res_DPN24h_vs_Control24h)
+```
+
+The following function applies a shrinkage method to the log fold changes (LFC) estimated by DESeq2, to reduce the variance of LFCs for genes with low expression levels. This approach helps avoid overestimating effect sizes in lowly expressed genes. To observe the effect of lfcShrink, plots are generated to visualize the data before and after applying the function.
+
+```{r part16,  message=FALSE, out.width="50%", results='hold', fig.show='hold'}
+res_DPN24h_vs_Control24h_apeglm <-lfcShrink(dds = dds_GSEA, 
+                                            coef = "group_DPN24h_vs_Control24h",
+                                            type = "apeglm", 
+                                            res = res_DPN24h_vs_Control24h)
+
+plotMA(res_DPN24h_vs_Control24h, ylim = c(-4, 4))
+plotMA(res_DPN24h_vs_Control24h_apeglm, ylim = c(-4, 4))
+```
+
+Finally, the following code saves the data in a variable and generates the gene ranking file:
+
+```{r part17, message=FALSE}
+rnk_data <- data.frame(Feature = rownames(res_DPN24h_vs_Control24h), 
+                       LFC = res_DPN24h_vs_Control24h$log2FoldChange)
+write.table(rnk_data, file = "output/DPN_vs_Control_24h.rnk", 
+            sep = "\t", 
+            quote = FALSE, 
+            col.names = FALSE, 
+            row.names = FALSE)
+```
