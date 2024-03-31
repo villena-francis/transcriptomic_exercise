@@ -138,3 +138,38 @@ Finally, **gene expression levels** were quantified using the `htseq-count` tool
 The obtained read counts are available in `part_1/htseq` as `.htseq` files:
 - [SRR479052.htseq](part_1/htseq/SRR479052.htseq)
 - [SRR479054.htseq](part_1/htseq/SRR479054.htseq)
+
+# Section 2
+
+To address the questions posed in the second section, instructors provided a raw count matrix of the 24 analyzed cell cultures (`rawcounts.tsv`), a data frame with the metadata associated with the experiment (`metadata.tsv`), and the GMT file for performing a GSEA (`DPN_response.gmt`). These files are stored in [`part_2/input`](part_2/input). 
+
+To complete the R tasks in this section, `scripts/section2.Rmd` was developed, which contains the commented and documented R code to perform the required analyses. From this script, `part_2/output/section2.html` was generated, which presents the code used along with the results obtained in a clear and structured way.
+
+## 4. Differential gene expression analysis
+
+The [`section2.Rmd`](scripts/section2.Rmd) performs an analysis to determine the differentially expressed genes between samples treated with OHT or DPN compared to the control after 24 hours. This R Markdown document combines the R code used for the analysis with plots and explanatory text. The HTML version can be quickly viewed here [section2.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/scripts/section2.html).
+
+The 24-hour control sample from patient 4 after treatment shows greater similarity to the samples from patient 3 than to the other samples from patient 4. There could have been contamination when moving from preparing cultures of patient 3 to patient 4, or the experimenter may have been confused and continued using cells from patient 3 in the preparation of the 24-hour control for patient 4. However, a more detailed analysis would be required to confirm this hypothesis. Considering the observed importance of cell culture origin in data variability and potential results, it was determined that this outlier should be excluded from analysis.
+
+The **results of the differential expression analysis** suggest that 24-hour treatment with OHT did not substantially alter gene expression profiles. In contrast, treatment with DPN induced changes in the expression of 5 genes, but the magnitude of these changes was moderate (less than 2-fold). Therefore, the effects of DPN treatment do not appear to be highly significant.
+
+## 5. Gene set enrichment analysis
+
+To perform a Gene Set Enrichment Analysis (GSEA) for analyzing the effect of DNP treatment at 24 hours, the instructors only provided the GMT file. Additionally, to carry out the GSEA, the **obtainment of the gene ranked file** was done using the results of the differential expression analysis performed with DESeq2 in question 4. This task is included in the last part of the `section2.Rmd`.
+
+The gene ranked file and the methods with explanatory text used to obtain it can be reviewed here:
+- [DPN_vs_Control_24h.rnk](part_2/output/DPN_vs_Control_24h.rnk)
+- [section2.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/scripts/section2.html)
+
+The specifications of the mamba environment containing the intructions to install the GSEA's desktop app for the question 5 are provided in `env/part_2.yml`. To install it, use the following command:
+```
+mamba env create -f env/part_2.yml
+```
+ To activate the environment and open the GSEA's desktop app, use these commands:
+ ```
+mamba activate part_2
+
+gsea
+ ```
+ 
+<p align="center"> <strong> 🚧 THIS PART IS UNDER CONSTRUCTION... 🚧 </p>

@@ -263,6 +263,9 @@ Finally, the following code saves the data in a variable and generates the gene 
 ```{r part17, message=FALSE}
 rnk_data <- data.frame(Feature = rownames(res_DPN24h_vs_Control24h), 
                        LFC = res_DPN24h_vs_Control24h$log2FoldChange)
+
+dir.create("output", showWarnings = FALSE)
+
 write.table(rnk_data, file = "output/DPN_vs_Control_24h.rnk", 
             sep = "\t", 
             quote = FALSE, 
