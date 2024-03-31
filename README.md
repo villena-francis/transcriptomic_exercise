@@ -39,10 +39,10 @@ bash scripts/part_1.sh
 
 **FastQC reports** for each fastq file are available in `part_1/quality_controls/fastqc_reports`. Here you can review FastQC reports obtained:
 
-- [SRR479052.chr21_1_fastqc.html](part_1/quality_controls/fastqc_reports/SRR479052.chr21_1_fastqc.html)
-- [SRR479052.chr21_2_fastqc.html](part_1/quality_controls/fastqc_reports/SRR479052.chr21_2_fastqc.html)
-- [SRR479054.chr21_1_fastqc.html](part_1/quality_controls/fastqc_reports/SRR479054.chr21_1_fastqc.html)
-- [SRR479054.chr21_2_fastqc.html](part_1/quality_controls/fastqc_reports/SRR479054.chr21_2_fastqc.html)
+- [SRR479052.chr21_1_fastqc.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_1/quality_controls/fastqc_reports/SRR479052.chr21_1_fastqc.html)
+- [SRR479052.chr21_2_fastqc.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_1/quality_controls/fastqc_reports/SRR479052.chr21_2_fastqc.html)
+- [SRR479054.chr21_1_fastqc.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_1/quality_controls/fastqc_reports/SRR479054.chr21_1_fastqc.html)
+- [SRR479054.chr21_2_fastqc.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_1/quality_controls/fastqc_reports/SRR479054.chr21_2_fastqc.html)
   
 According to those reports, there are several widespread quality issues with the samples:
 
@@ -52,10 +52,10 @@ According to those reports, there are several widespread quality issues with the
 - Adapter Content. around 10% of the reads still contain Illumina adapter sequences.
 
 **FastQ Screen reports** for each fastq file are available in `part_1/quality_controls/fastq_screen_reports`. Here you can review FastQ Screen reports obtained:
-- [SRR479052.chr21_1_screen.html](part_1/quality_controls/fastq_screen_reports/SRR479052.chr21_1_screen.html)
-- [SRR479052.chr21_2_screen.html](part_1/quality_controls/fastq_screen_reports/SRR479052.chr21_2_screen.html)
-- [SRR479054.chr21_1_screen.html](part_1/quality_controls/fastq_screen_reports/SRR479054.chr21_1_screen.html)
-- [SRR479054.chr21_2_screen.html](part_1/quality_controls/fastq_screen_reports/SRR479054.chr21_2_screen.html)
+- [SRR479052.chr21_1_screen.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_1/quality_controls/fastq_screen_reports/SRR479052.chr21_1_screen.html)
+- [SRR479052.chr21_2_screen.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_1/quality_controls/fastq_screen_reports/SRR479052.chr21_2_screen.html)
+- [SRR479054.chr21_1_screen.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_1/quality_controls/fastq_screen_reports/SRR479054.chr21_1_screen.html)
+- [SRR479054.chr21_2_screen.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_1/quality_controls/fastq_screen_reports/SRR479054.chr21_2_screen.html)
 
 According to these reports, there is no evidence of cross-contamination, although like with FastQC, the existence of sequences related to sequencing adapters is observed. 
 
@@ -83,10 +83,10 @@ Trimmed files are aviable in [`part_1/cutadapt`](part_1/cutadapt).
 
 To ensure the pre-processing steps were successful, FastQC analysis was performed on the trimmed FASTQ files. These reports are stored in `part_1/quality_control/fastqc_reports` and are labeled with "trimmed" to distinguish them from the reports of the raw data. Here you can review FastQC reports obtained from the trimmed FASTQ files:
 
-- [SRR479052.chr21_1_trimmed_fastqc.html](part_1/quality_controls/fastqc_reports/SRR479052.chr21_1_trimmed_fastqc.html)
-- [SRR479052.chr21_2_trimmed_fastqc.html](part_1/quality_controls/fastqc_reports/SRR479052.chr21_2_trimmed_fastqc.html)
-- [SRR479054.chr21_1_trimmed_fastqc.html](part_1/quality_controls/fastqc_reports/SRR479054.chr21_1_trimmed_fastqc.html)
-- [SRR479054.chr21_2_trimmed_fastqc.html](part_1/quality_controls/fastqc_reports/SRR479054.chr21_2_trimmed_fastqc.html)
+- [SRR479052.chr21_1_trimmed_fastqc.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_1/quality_controls/fastqc_reports/SRR479052.chr21_1_trimmed_fastqc.html)
+- [SRR479052.chr21_2_trimmed_fastqc.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_1/quality_controls/fastqc_reports/SRR479052.chr21_2_trimmed_fastqc.html)
+- [SRR479054.chr21_1_trimmed_fastqc.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_1/quality_controls/fastqc_reports/SRR479054.chr21_1_trimmed_fastqc.html)
+- [SRR479054.chr21_2_trimmed_fastqc.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_1/quality_controls/fastqc_reports/SRR479054.chr21_2_trimmed_fastqc.html)
 
 The outcomes of the reports were favorable across all parameters, except for a warning in Sequence Length Distribution. This warning about the increased variability in sequence lengths was expected after cutadapt pre-processing.
 
