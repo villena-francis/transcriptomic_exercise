@@ -19,37 +19,37 @@ do
 done
 
 #FastQScreen 
-mkdir -p quality_controls/fastq_screen_reports
+# mkdir -p quality_controls/fastq_screen_reports
 
-fastq_screen_dir="quality_controls/fastq_screen_reports"
+# fastq_screen_dir="quality_controls/fastq_screen_reports"
 
-if [ -f genomes/FastQ_Screen_Genomes/fastq_screen.conf ]
-then
-    echo -e "${blue}Ref genomes already downloaded${endblue}"   
-else
-    fastq_screen --get_genomes --outdir genomes/
-fi
+# if [ -f genomes/FastQ_Screen_Genomes/fastq_screen.conf ]
+# then
+#     echo -e "${blue}Ref genomes already downloaded${endblue}"   
+# else
+#     fastq_screen --get_genomes --outdir genomes/
+# fi
 
 find $fastq_dir -name "*.fastq" | grep -oP 'SRR\d+' | sort | uniq > $fastq_dir/sid_list.txt 
 
 list=$(cat $fastq_dir/sid_list.txt)
 
-for sid in $list
-do
-    line12=$(sed -n '12p' genomes/FastQ_Screen_Genomes/fastq_screen.conf)
-    if [[ $line12 =~ ^#.* ]]
-    then
-        echo
-        echo -e "${red}Set bowtie2 path in fastq_screen.conf${endred}"
-        echo -e "${red}and then re-run this pipeline${endred}"
-        exit 1
-    else 
-        fastq_screen --conf genomes/FastQ_Screen_Genomes/fastq_screen.conf \
-                     --outdir $fastq_screen_dir \
-                     --aligner bowtie2 \
-                     $fastq_dir/${sid}.chr21_1.fastq $fastq_dir/${sid}.chr21_2.fastq
-    fi
-done
+# for sid in $list
+# do
+#     line12=$(sed -n '12p' genomes/FastQ_Screen_Genomes/fastq_screen.conf)
+#     if [[ $line12 =~ ^#.* ]]
+#     then
+#         echo
+#         echo -e "${red}Set bowtie2 path in fastq_screen.conf${endred}"
+#         echo -e "${red}and then re-run this pipeline${endred}"
+#         exit 1
+#     else 
+#         fastq_screen --conf genomes/FastQ_Screen_Genomes/fastq_screen.conf \
+#                      --outdir $fastq_screen_dir \
+#                      --aligner bowtie2 \
+#                      $fastq_dir/${sid}.chr21_1.fastq $fastq_dir/${sid}.chr21_2.fastq
+#     fi
+# done
 
 # Cutadapt
 mkdir -p cutadapt
