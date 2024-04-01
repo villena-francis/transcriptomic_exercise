@@ -171,5 +171,43 @@ mamba activate part_2
 
 gsea
  ```
- 
-<p align="center"> <strong> 🚧 THIS PART IS UNDER CONSTRUCTION... 🚧 </p>
+The GSEA desktop app allows copying the selected settings in command line format to display the parameters used for the analysis:
+
+```
+gsea-cli.sh GSEAPreranked -gmx /home/villena/transcriptomic_exercise/part_2/input/DPN_response.gmt -collapse No_Collapse -mode Abs_max_of_probes -norm meandiv -nperm 1000 -rnd_seed 123 -rnk /home/villena/transcriptomic_exercise/part_2/output/DPN_vs_Control_24h.rnk -scoring_scheme weighted -rpt_label GSEA_DPN_vs_Control_24h -create_svgs false -include_only_symbols true -make_sets true -plot_top_x 20 -set_max 500 -set_min 15 -zip_report false -out /home/villena/transcriptomic_exercise/part_2/output
+```
+Here you have a detailed explanation of each argument:
+
+- `gsea-cli.sh GSEAPreranked`: indicates that GSEA will be run in preranked mode. 
+- `-gmx /home/villena/transcriptomic_exercise/part_2/input/DPN_response.gmt`: specifies the GMT file containing the gene sets to be analyzed. 
+- `-collapse No_Collapse`: indicates that no probe or gene collapsing will be performed. 
+- `-mode Abs_max_of_probes`: specifies the probe collapsing mode. In this case, the absolute maximum value among the probes of the same gene will be selected. 
+- `-norm meandiv`: indicates the normalization method used. Here, it is divided by the mean. 
+- `-nperm 1000`: sets the number of permutations to perform for the calculation of statistical significance to 1000. 
+- `-rnd_seed 123`: sets a random seed to ensure reproducibility of the results. 
+- `-rnk /home/villena/transcriptomic_exercise/part_2/output/DPN_vs_Control_24h.rnk`: specifies the input file containing the ranked list of genes. 
+- `-scoring_scheme weighted`: indicates the scoring scheme used. In this case, a weighted scheme is used. 
+- `-rpt_label GSEA_DPN_vs_Control_24h`: sets a label for the generated report. 
+- `-create_svgs false`: indicates that SVG plots will not be generated. 
+- `-include_only_symbols true`: indicates that only gene symbols will be included in the analysis. 
+- `-make_sets true`: indicates that leading edge gene sets will be generated. 
+- `plot_top_x 20`: sets the maximum number of plots to generate for the top gene sets. 
+- `-set_max 500`: sets the maximum allowed size for a gene set. 
+- `-set_min 15`: sets the minimum allowed size for a gene set. 
+- `-zip_report false`: indicates that the generated report will not be compressed. 
+- `-out /home/villena/transcriptomic_exercise/part_2/output`: specifies the output directory where the results will be saved.
+
+The **GSEA analysis results** can be found in [`part_2/output/DPN_vs_Control_24h.GseaPreranked.1711972354052`](part_2/output/DPN_vs_Control_24h.GseaPreranked.1711972354052). To interactively and visually explore the key statistical results and charts generated, open [`index.html`](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_2/output/DPN_vs_Control_24h.GseaPreranked.1711972354052/index.html).
+
+The objective of the study was to determine if treatment with diarylpropionitrile (DPN), an agonist of the estrogen receptor alpha (ERα), produces any effect on primary cultures of ERα negative parathyroid tumors in the first 24 hours. For this, the gene expression profiles of samples treated with DPN for 24 hours were compared to untreated control samples. A gene set enrichment analysis (GSEA) was performed using two previously defined gene sets:
+
+- DPN_PERTURBED: genes most expressed in samples treated with DPN for 48 hours.
+- DPN_UNPERTURBED: genes most expressed in control samples.
+
+**For the gene set DPN_PERTURBED**, a significant enrichment is observed (Nominal p-Value < 0.001) with a positive Normalized Enrichment Score (NES) of 1.837. The green line in the enrichment plot represents the cumulative "Enrichment Score" (ES). If the green line is above zero, it means that the genes in the set that are overexpressed after 48h of DPN treatment tend to be enriched at the top of the ranked list. In other words, many of these genes, specifically 70 out of 100 according to the "GSEA details" table, also tend to be among the most overexpressed after only 24h of treatment. These results can be seen in [DNP_PERTURBED.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_2/output/DPN_vs_Control_24h.GseaPreranked.1711972354052/DPN_PERTURBED.html).
+
+In contrast, **for the gene set DNP_UNPERTURBED**, a significant enrichment is observed (Nominal p-Value < 0.001) but with a negative NES of -2.018. The green line in the enrichment plot remains below zero, indicating that the genes more expressed in the untreated control samples tend to be enriched at the bottom of the ranked list. Based on this and the "GSEA details" table, 75 out of the 100 genes in this set tend to be among the least expressed after 24h of DPN treatment. These results can be seen in [DNP_UNPERTURBED.html](https://htmlpreview.github.io/?https://github.com/villena-francis/transcriptomic_exercise/blob/main/part_2/output/DPN_vs_Control_24h.GseaPreranked.1711972354052/DNP_UNPERTURBED.html).
+
+**In summary**, these results indicate that DPN treatment for 24 hours already produces detectable changes in the gene expression profile of ERα negative primary parathyroid tumor cultures. A trend is observed towards overexpression of the genes induced by DPN at 48h and underexpression of the genes characteristic of the basal state without treatment. The **GSEA analysis demonstrates that at 24h DPN already exerts early effects on gene expression**, which are then observed at 48h more pronouncedly as indicated by the collaborator.
+
+As a **future continuation** of this analysis, it would be interesting **to perform a functional enrichment analysis**, with which to identify functional categories or pathways that are overrepresented in these studied gene sets.
